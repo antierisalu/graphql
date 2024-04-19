@@ -1,0 +1,46 @@
+* {
+    background-color: rgb(20, 0, 20);
+    color: gainsboro;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    
+}
+
+.topBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid darkviolet;
+    padding: 10px;
+    margin: 10px;
+}
+
+.boxes {
+    display: grid;
+    justify-content: center;
+    grid-template-columns: 1fr 1fr; 
+    grid-template-rows: auto auto auto; 
+    height: 90vh; 
+    gap: 10px; 
+    margin: 10px;
+}
+
+.boxes > .box:first-child {
+    grid-column: span 2; /* This will make the first box span two columns */
+}
+
+
+.box {
+    border: 1px solid darkviolet; /* This will give each box a border */
+    padding: 10px; /* This will give each box some padding */
+    display: grid; /* This will center the text inside the box */
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    scrollbar-color:  darkviolet rgb(20,0,20);
+}
+
+.boxData {
+    margin: 4px
+}
+
+
