@@ -1,34 +1,44 @@
 import http from 'http';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = 8080;
-const staticDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'static');
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(staticDir, req.url);
+  let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+  const extname = path.extname(filePath);
 
-  if (filePath.endsWith('/')) {
-    filePath = path.join(filePath, 'index.html');
+  let contentType = 'text/html';
+  switch (extname) {
+    case '.js':
+      contentType = 'text/javascript';
+      break;
+    case '.css':
+      contentType = 'text/css';
+      break;
+    case '.ico':
+      contentType = 'image/x-icon';
+      break;
   }
 
-  const fileStream = fs.createReadStream(filePath);
-
-  fileStream.on('error', (err) => {
-    if (err.code === 'ENOENT') {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('404 Not Found');
+  fs.readFile(filePath, (err, content) => {
+    if (err) {
+      if (err.code === 'ENOENT') {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('404 Not Found');
+      } else {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('500 Internal Server Error');
+      }
     } else {
-      console.error('File Stream Error:', err);
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end('500 Internal Server Error');
+      res.writeHead(200, { 'Content-Type': contentType });
+      res.end(content, 'utf-8');
     }
   });
-
-  fileStream.pipe(res);
 });
 
 server.listen(PORT, () => {
-  console.log(`Server running on https://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
