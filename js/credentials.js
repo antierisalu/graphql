@@ -17,7 +17,7 @@ async function login(usernameOrEmail, password) {
   
   const data = await response.json();
   console.log(data);
-  const jwt = data.jwt;
+  const jwt = data;
   localStorage.setItem('jwt', jwt);
   return jwt;
 }
