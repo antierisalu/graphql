@@ -10,11 +10,25 @@ async function getUserData() {
         },
         body: JSON.stringify({
           query: `{
-          user {
-            auditRatio
-            attrs
-          }
-        }`,
+            user{
+              auditRatio
+              login
+              attrs
+              xps (where: { event: { id: { _eq: 148  } } } ){
+                path
+                amount
+                event {
+                  id
+                }
+              }
+            }
+            
+            result (where: {type: {_eq: "user_audit"}}) {
+                      grade
+                      path
+
+                    }
+          }`,
         }),
       }
     );
@@ -26,8 +40,23 @@ async function getUserData() {
 
     const data = await response.json();
     console.log(data);
-    const auditRatio = data.data.user[0].auditRatio;
+    
+
+    const auditRatio = data.data.user[0].auditRatio.toFixed(2)
     const attrs = data.data.user[0].attrs;
+    const login = data.data.user[0].login
+
+    const xp = data.data.user[0].xps
+    const xpData = [];
+
+    xp.forEach(item => {
+      xpData.push({
+        path: item.path,
+        amount: (item.amount / 1000).toFixed(0)
+      });
+    });
+
+    console.log(xp)
 
     let {
       tel,
@@ -41,19 +70,19 @@ async function getUserData() {
     } = attrs;
 
     populateProfile(firstName, lastName, email, tel, personalIdentificationCode, addressStreet, addressCity, addressCountry)
+    populateAuditRatio(auditRatio)
+    displayData(xpData)
 
-    console.log("Audit Ratio:", auditRatio);
+    document.getElementById("topBarUserName").innerHTML = login
+
   } catch (error) {
     console.error("Error fetching user data:", error.message);
   }
 }
 
 function populateProfile(firstName, lastName, email, tel, personalIdentificationCode, addressStreet, addressCity, addressCountry) {
-  // Get the element with id "profile"
-  let profileElement = document.getElementById("profile");
 
-  // Update the inner HTML of the profile element with the dynamic data
-  profileElement.innerHTML = `
+  document.getElementById("profile").innerHTML = `
   <div class="boxData">${firstName} ${lastName}</div>
   <div class="boxData">${email}</div>
   <div class="boxData">${tel}</div>
@@ -62,3 +91,36 @@ function populateProfile(firstName, lastName, email, tel, personalIdentification
 `;
 }
 
+function populateAuditRatio(auditRatio) {
+
+  document.getElementById("auditRatio").innerHTML = `
+  <div class="boxData">Audit Ratio: ${auditRatio}</div>
+  `;
+}
+
+function displayData(xpData) {
+  const dataContainer = document.getElementById('xp');
+
+  // Clear any existing content in the container
+  dataContainer.innerHTML = '';
+
+  // Loop through the xpData array and create div elements for each item
+  xpData.forEach(item => {
+    // Create a new div for each item
+    const itemDiv = document.createElement('div');
+
+    // Create elements for path and amount and set their content
+    const pathElement = document.createElement('p');
+    pathElement.textContent = `Path: ${item.path}`;
+
+    const amountElement = document.createElement('p');
+    amountElement.textContent = `Experience Points: ${item.amount} Kb`;
+
+    // Append path and amount elements to the item div
+    itemDiv.appendChild(pathElement);
+    itemDiv.appendChild(amountElement);
+
+    // Append the item div to the data container
+    dataContainer.appendChild(itemDiv);
+  });
+}
