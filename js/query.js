@@ -46,17 +46,28 @@ async function getUserData() {
     const attrs = data.data.user[0].attrs;
     const login = data.data.user[0].login
 
+    const grades = data.data.result
+    const gradeData = []
+
     const xp = data.data.user[0].xps
     const xpData = [];
+    let totalXpAmount = 0;
 
     xp.forEach(item => {
       xpData.push({
         path: item.path,
         amount: (item.amount / 1000).toFixed(0)
       });
+      totalXpAmount += item.amount / 1000
     });
 
-    console.log(xp)
+    grades.forEach(item => {
+      gradeData.push({
+        path: item.path,
+        grade: item.grade.toFixed(2)
+      })
+
+    })
 
     let {
       tel,
@@ -69,9 +80,9 @@ async function getUserData() {
       personalIdentificationCode,
     } = attrs;
 
-    populateProfile(firstName, lastName, email, tel, personalIdentificationCode, addressStreet, addressCity, addressCountry)
-    populateAuditRatio(auditRatio)
-    displayData(xpData)
+    displayProfile(firstName, lastName, email, tel, personalIdentificationCode, addressStreet, addressCity, addressCountry)
+    displayXps(xpData, totalXpAmount)
+    displayGrades(gradeData, auditRatio)
 
     document.getElementById("topBarUserName").innerHTML = login
 
@@ -80,7 +91,7 @@ async function getUserData() {
   }
 }
 
-function populateProfile(firstName, lastName, email, tel, personalIdentificationCode, addressStreet, addressCity, addressCountry) {
+function displayProfile(firstName, lastName, email, tel, personalIdentificationCode, addressStreet, addressCity, addressCountry) {
 
   document.getElementById("profile").innerHTML = `
   <div class="boxData">${firstName} ${lastName}</div>
@@ -91,36 +102,48 @@ function populateProfile(firstName, lastName, email, tel, personalIdentification
 `;
 }
 
-function populateAuditRatio(auditRatio) {
+function displayGrades(gradeData, auditRatio) {
 
-  document.getElementById("auditRatio").innerHTML = `
-  <div class="boxData">Audit Ratio: ${auditRatio}</div>
-  `;
+  document.getElementById("auditRatio").innerHTML = `<div class="boxData">Audit Ratio: ${auditRatio}</div>`;
+
+  const dataContainer = document.getElementById('grades')
+  dataContainer.innerHTML = ''
+
+  gradeData.forEach(item => {
+    const itemDiv = document.createElement('div')
+    
+    const pathElement = document.createElement('p')
+    pathElement.textContent = `Task: ${item.path}`
+
+    const gradeElement = document.createElement('p')
+    gradeElement.textContent = `Grade: ${item.grade}`
+
+    itemDiv.appendChild(pathElement)
+    itemDiv.appendChild(gradeElement)
+
+    dataContainer.appendChild(itemDiv)
+  })
 }
 
-function displayData(xpData) {
-  const dataContainer = document.getElementById('xp');
+function displayXps(xpData, totalXpAmount) {
 
-  // Clear any existing content in the container
+  document.getElementById("totalXp").innerHTML = `<div class="boxData">Total Experience Points: ${totalXpAmount} Kb</div>`;
+  
+  const dataContainer = document.getElementById('xp');
   dataContainer.innerHTML = '';
 
-  // Loop through the xpData array and create div elements for each item
   xpData.forEach(item => {
-    // Create a new div for each item
     const itemDiv = document.createElement('div');
 
-    // Create elements for path and amount and set their content
     const pathElement = document.createElement('p');
-    pathElement.textContent = `Path: ${item.path}`;
+    pathElement.textContent = `Task: ${item.path}`;
 
     const amountElement = document.createElement('p');
     amountElement.textContent = `Experience Points: ${item.amount} Kb`;
 
-    // Append path and amount elements to the item div
     itemDiv.appendChild(pathElement);
     itemDiv.appendChild(amountElement);
 
-    // Append the item div to the data container
     dataContainer.appendChild(itemDiv);
   });
 }
