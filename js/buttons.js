@@ -13,7 +13,6 @@ function logInButton() {
             getUserData()
             document.querySelector('.loginInput').value = "";
             document.querySelector('.passwordInput').value = "";
-            // displayMainPage()
         })
         .catch(error => {
             console.error(error);
@@ -25,3 +24,7 @@ function displayMainPage () {
     document.querySelector('.loginPage').style.display = 'none';
     document.querySelector('.indexPage').style.display = 'block';
 }
+
+function openInNewTab(url) {
+    window.open(url, '_blank');
+  }
