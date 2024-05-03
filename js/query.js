@@ -1,94 +1,66 @@
-async function getUserData() {
-  try {
-    const response = await fetch(
-      "https://01.kood.tech/api/graphql-engine/v1/graphql",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("jwt")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: `{
-            user{
-              auditRatio
-              login
-              attrs
-            }
-            transaction(where: { type: {_eq:"xp"}, object: { type: {_eq: "project"} } }) {
-              amount
-              object {
-                name
-              }
-            }
-            result (where: {type: {_eq: "user_audit"}}) {
-              grade
-              object {
-                name
-              }
-            }
-          }`,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Error fetching user data");
-    }
-    const data = await response.json();
-
-    const gradeData = []
-    const xpData = [];
-    let totalXpAmount = 0;
-
-    const userData = data.data.user[0]
-    const auditRatio = userData.auditRatio.toFixed(2)
-    const attrs = userData.attrs;
-    const login = userData.login
-    const xp = data.data.transaction
-    const grades = data.data.result
-    console.log(grades)
-
-    xp.forEach(item => {
-      xpData.push({
-        name: item.object.name,
-        amount: (item.amount / 1000).toFixed(0)
-      });
-      totalXpAmount += item.amount / 1000
-    });
-
-    grades.forEach(item => {
-      gradeData.push({
-        name: item.object.name,
-        grade: item.grade.toFixed(2)
-      })
-    })
-
-    let {
-      tel,
-      email,
-      lastName,
-      firstName,
-      addressCity,
-      addressStreet,
-      addressCountry,
-      personalIdentificationCode,
-    } = attrs;
-
-    displayMainPage()
-    displayProfile(firstName, lastName, email, tel, personalIdentificationCode, addressStreet, addressCity, addressCountry)
-    displayXps(xpData, totalXpAmount)
-    displayGrades(gradeData, auditRatio)
-
-    document.getElementById("topBarUserName").innerHTML = `01 ${login}`
-
-  } catch (error) {
-    console.error("Error fetching user data:", error.message);
-  }
+function getUserData() {
+  displayMainPage()
+  displayProfile()
+  displayXps()
+  displayGrades()
 }
 
-function displayProfile(firstName, lastName, email, tel, personalIdentificationCode, addressStreet, addressCity, addressCountry) {
+async function makeQuery(query) {
+  try {
+  const response = await fetch(
+    "https://01.kood.tech/api/graphql-engine/v1/graphql",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({query: query}),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Error fetching user data");
+  }
+  const data = await response.json();
+  return data
+
+} catch (error) {
+  console.error("Error fetching user data:", error.message);
+}
+
+}
+
+async function displayProfile() {
+  try {
+  let query = `{
+    user{
+      auditRatio
+      login
+      attrs
+    }
+  }`
+
+  const data = await makeQuery(query)
+  const userData = data.data.user[0]
+  const auditRatio = userData.auditRatio.toFixed(2)
+  const attrs = userData.attrs;
+  const login = userData.login
+
+  const {
+    tel,
+    email,
+    lastName,
+    firstName,
+    addressCity,
+    addressStreet,
+    addressCountry,
+    personalIdentificationCode,
+  } = attrs;
+
+  document.getElementById("auditRatio").innerHTML = `<div class="boxData">Audit Ratio: ${auditRatio}</div>`;
+  document.getElementById("topBarUserName").innerHTML = `01 ${login}`
 
   document.getElementById("profile").innerHTML = `
   <div class="boxData">${firstName} ${lastName}</div>
@@ -97,59 +69,36 @@ function displayProfile(firstName, lastName, email, tel, personalIdentificationC
   <div class="boxData">${tel}</div>
   <div class="boxData">${addressStreet}, ${addressCity}, ${addressCountry}</div>
 `;
+} catch (error) {
+  console.error("Error fetching user data:", error.message);
+}
 }
 
-function displayGrades(gradeData, auditRatio) {
-  const dataContainer = document.getElementById('grades');
-  dataContainer.innerHTML = '';
+async function displayXps() {
+try {
+  let query = `{
+    transaction(where: { type: {_eq:"xp"}, object: { type: {_eq: "project"} } }) {
+      amount
+      object {
+        name
+      }
+    }
+  }`
 
-  document.getElementById("auditRatio").innerHTML = `<div class="boxData">Audit Ratio: ${auditRatio}</div>`;
+  const data = await makeQuery(query)
+  const xpData = [];
+  const xp = data.data.transaction
+  let totalXpAmount = 0;
 
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', (dataContainer.clientWidth - 50) + 'px');
-
-  const barsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-
-  const barHeight = 20; 
-  const totalHeight = gradeData.length * barHeight;
-  svg.setAttribute('height', totalHeight);
-
-  const maxAmount = Math.max(...gradeData.map(item => item.grade));
-
-  gradeData.forEach((item, index) => {
-    const barWidth = (item.grade / maxAmount) * 100; // Scale based on max amount
-
-    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    bar.setAttribute('x', 0);
-    bar.setAttribute('y', index * barHeight);
-    bar.setAttribute('width', barWidth + '100');
-    bar.setAttribute('height', barHeight);
-    bar.style.fill = 'darkviolet';
-
-    const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    amountText.setAttribute('x', 0); 
-    amountText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
-    amountText.setAttribute('dominant-baseline', 'middle');
-    amountText.style.fill = 'gainsboro'; 
-    amountText.textContent = `Grade: ${item.grade} `;
-
-    const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    taskText.setAttribute('x', 150); 
-    taskText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
-    taskText.setAttribute('dominant-baseline', 'middle');
-    taskText.style.fill = 'gainsboro'; 
-    taskText.textContent = `${item.name}`;
-
-    barsGroup.appendChild(bar);
-    barsGroup.appendChild(amountText);
-    barsGroup.appendChild(taskText); 
+  xp.forEach(item => {
+    xpData.push({
+      name: item.object.name,
+      amount: (item.amount / 1000).toFixed(0)
+    });
+    totalXpAmount += item.amount / 1000
   });
 
-  svg.appendChild(barsGroup);
-  dataContainer.appendChild(svg);
-}
 
-function displayXps(xpData, totalXpAmount) {
   const dataContainer = document.getElementById('xp');
   dataContainer.innerHTML = '';
 
@@ -198,4 +147,81 @@ function displayXps(xpData, totalXpAmount) {
 
   svg.appendChild(barsGroup);
   dataContainer.appendChild(svg);
+
+} catch (error) {
+  console.error("Error fetching xps:", error.message);
+}
+}
+
+async function displayGrades() {
+  try {
+    let query = `{
+      result (where: {type: {_eq: "user_audit"}}) {
+        grade
+        object {
+          name
+        }
+      }
+    }`
+
+    const data = await makeQuery(query)
+    const gradeData = []
+    const grades = data.data.result
+
+    grades.forEach(item => {
+      gradeData.push({
+        name: item.object.name,
+        grade: item.grade.toFixed(2)
+      })
+    })
+
+  const dataContainer = document.getElementById('grades');
+  dataContainer.innerHTML = '';
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', (dataContainer.clientWidth - 50) + 'px');
+
+  const barsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+  const barHeight = 20; 
+  const totalHeight = gradeData.length * barHeight;
+  svg.setAttribute('height', totalHeight);
+
+  const maxAmount = Math.max(...gradeData.map(item => item.grade));
+
+  gradeData.forEach((item, index) => {
+    const barWidth = (item.grade / maxAmount) * 100; // Scale based on max amount
+
+    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bar.setAttribute('x', 0);
+    bar.setAttribute('y', index * barHeight);
+    bar.setAttribute('width', barWidth + '100');
+    bar.setAttribute('height', barHeight);
+    bar.style.fill = 'darkviolet';
+
+    const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    amountText.setAttribute('x', 0); 
+    amountText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
+    amountText.setAttribute('dominant-baseline', 'middle');
+    amountText.style.fill = 'gainsboro'; 
+    amountText.textContent = `Grade: ${item.grade} `;
+
+    const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    taskText.setAttribute('x', 150); 
+    taskText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
+    taskText.setAttribute('dominant-baseline', 'middle');
+    taskText.style.fill = 'gainsboro'; 
+    taskText.textContent = `${item.name}`;
+
+    barsGroup.appendChild(bar);
+    barsGroup.appendChild(amountText);
+    barsGroup.appendChild(taskText); 
+  });
+
+  svg.appendChild(barsGroup);
+  dataContainer.appendChild(svg);
+
+} catch (error) {
+  console.error("Error fetching grades:", error.message);
+}
 }
