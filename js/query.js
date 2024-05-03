@@ -116,7 +116,7 @@ try {
     totalXpAmount += item.amount / 1000
   });
 
-  xpData.sort((a, b) => a.amount - b.amount)
+  xpData.sort((a, b) => b.amount - a.amount)
 
   const dataContainer = document.getElementById('xp');
   dataContainer.innerHTML = '';
