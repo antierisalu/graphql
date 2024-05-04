@@ -119,7 +119,7 @@ async function displayXps() {
   const dataContainer = document.getElementById('xp');
   dataContainer.innerHTML = '';
 
-  document.getElementById("totalXp").innerHTML = `<div class="boxData">Total Experience Points: ${totalXpAmount} Kb</div>`;
+  document.getElementById("totalXp").innerHTML = `<div class="boxData">Total Experience Points: ${totalXpAmount.toFixed(2)} Kb</div>`;
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('width', (dataContainer.clientWidth - 50) + 'px'); 
@@ -233,13 +233,9 @@ async function displayGrades() {
     barsGroup.appendChild(amountText);
     barsGroup.appendChild(taskText); 
   });
-
   svg.appendChild(barsGroup);
   dataContainer.appendChild(svg);
-
-
 }
-
   
 async function displayAudit() {
   
