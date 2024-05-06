@@ -167,71 +167,81 @@ async function displayXps() {
 
 }
 
+
 async function displayGrades() {
-  
-    let gradeQuery = `{
+  let gradeQuery = `{
       result (where: {type: {_eq: "user_audit"}}) {
-        grade
-        object {
-          name
-        }
+          grade
+          object {
+              name
+          }
       }
-    }`
+  }`
 
-    const data = await makeQuery(gradeQuery)
-    const gradeData = []
-    const grades = data.data.result
+  const data = await makeQuery(gradeQuery)
+  const gradeData = []
+  const grades = data.data.result
 
-    grades.forEach(item => {
+  grades.forEach(item => {
       gradeData.push({
-        name: item.object.name,
-        grade: item.grade.toFixed(2)
+          name: item.object.name,
+          grade: item.grade.toFixed(2)
       })
-    })
+  })
 
-  gradeData.sort((a, b) => a.grade - b.grade)
+  gradeData.sort((a, b) => b.grade - a.grade) // Sort from highest to lowest grade
 
   const dataContainer = document.getElementById('grades');
   dataContainer.innerHTML = '';
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', (dataContainer.clientWidth - 50) + 'px');
+  const containerWidth = dataContainer.clientWidth; // Get the width of the container
+  svg.setAttribute('width', (containerWidth - 50) + 'px');
 
   const barsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-  const barHeight = 20; 
-  const totalHeight = gradeData.length * barHeight;
-  svg.setAttribute('height', totalHeight);
+  const spacing = 5; // Adjust spacing between bars
+  const totalBars = gradeData.length;
+
+  // Calculate total width available for bars
+  const totalBarWidth = containerWidth - (spacing * (totalBars - 1));
+  const barWidth = totalBarWidth / totalBars;
+
+  const containerHeight = dataContainer.clientHeight - 50;
+
+  svg.setAttribute('height', containerHeight + 'px');
 
   const maxAmount = Math.max(...gradeData.map(item => item.grade));
 
   gradeData.forEach((item, index) => {
-    const barWidth = (item.grade / maxAmount) * 100; // Scale based on max amount
+      const barHeight = (item.grade / maxAmount) * containerHeight; // Scale based on max amount
+      console.log(barHeight)
 
-    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    bar.setAttribute('x', 0);
-    bar.setAttribute('y', index * barHeight);
-    bar.setAttribute('width', barWidth + '100');
-    bar.setAttribute('height', barHeight);
-    bar.style.fill = 'darkviolet';
+      const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bar.setAttribute('x', index * (barWidth + spacing)); 
+      bar.setAttribute('y', containerHeight - barHeight); 
+      bar.setAttribute('width', barWidth);
+      bar.setAttribute('height', barHeight);
+      bar.style.fill = 'darkviolet';
 
-    const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    amountText.setAttribute('x', 0); 
-    amountText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
-    amountText.setAttribute('dominant-baseline', 'middle');
-    amountText.style.fill = 'gainsboro'; 
-    amountText.textContent = `Grade: ${item.grade} `;
+      const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      amountText.setAttribute('x', index * (barWidth + spacing) + barWidth / 2);
+      amountText.setAttribute('y', containerHeight - barHeight); // Adjust position for text
+      amountText.setAttribute('text-anchor', 'middle'); // Center text horizontally
+      amountText.style.fill = 'gainsboro';
+      amountText.style.rotate = '270'; // Rotate counter-clockwise
+      amountText.textContent = `${item.grade}`;
 
-    const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    taskText.setAttribute('x', 150); 
-    taskText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
-    taskText.setAttribute('dominant-baseline', 'middle');
-    taskText.style.fill = 'gainsboro'; 
-    taskText.textContent = `${item.name}`;
+      // const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      // taskText.setAttribute('x', index * (barWidth + spacing) + barWidth / 2);
+      // taskText.setAttribute('y', 120); // Adjust position for text
+      // taskText.setAttribute('text-anchor', 'middle'); // Center text horizontally
+      // taskText.style.fill = 'gainsboro';
+      // taskText.textContent = `${item.name}`;
 
-    barsGroup.appendChild(bar);
-    barsGroup.appendChild(amountText);
-    barsGroup.appendChild(taskText); 
+      barsGroup.appendChild(bar);
+      barsGroup.appendChild(amountText);
+      // barsGroup.appendChild(taskText);
   });
   svg.appendChild(barsGroup);
   dataContainer.appendChild(svg);
