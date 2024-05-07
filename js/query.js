@@ -29,26 +29,16 @@ function combineDuplicates(data) {
 function handleMouseOver(event) {
   const hoveredBar = event.target;
   const hoveredBarIndex = [...hoveredBar.parentElement.children]
-.filter(child => child.tagName !== 'text') // Filter out text elements (assuming taskText is text)
-.indexOf(hoveredBar);
+    .filter(child => child.tagName !== 'text') 
+    .indexOf(hoveredBar);
 
-  // Access and update position of corresponding taskText
-  const hoveredTaskText = taskTextElements[hoveredBarIndex];
+  hoveredTaskText = taskTextElements[hoveredBarIndex];
   hoveredTaskText.style.display = 'block'
-
-  // Reset previous hovered taskText (if any)
-  if (previouslyHoveredTaskText) {
-    previouslyHoveredTaskText.style.display = 'none'
-  }
-
-  previouslyHoveredTaskText = hoveredTaskText;
 }
 
+
 const taskTextElements = [];
-
-let previouslyHoveredTaskText = null;
-
-const spacing = 5; // Adjust spacing between bars
+const spacing = 5;
   
 
 async function makeQuery(query) {
@@ -153,7 +143,7 @@ async function displayXps() {
 
   // Calculate the total height based on the number of items
   const barHeight = 20;
-  const totalHeight = xpData.length * barHeight;
+  const totalHeight = xpData.length * (barHeight + spacing);
   svg.setAttribute('height', totalHeight);
 
   const maxAmount = Math.max(...xpData.map(item => item.amount));
@@ -214,13 +204,13 @@ async function displayGrades() {
       })
   })
 
-  gradeData.sort((a, b) => b.grade - a.grade) // Sort from highest to lowest grade
+  gradeData.sort((a, b) => b.grade - a.grade) 
 
   const dataContainer = document.getElementById('grades');
   dataContainer.innerHTML = '';
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  const containerWidth = dataContainer.clientWidth; // Get the width of the container
+  const containerWidth = dataContainer.clientWidth - 30; 
   svg.setAttribute('width', containerWidth + 'px');
 
   const barsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -231,14 +221,14 @@ async function displayGrades() {
   const totalBarWidth = containerWidth - (spacing * (totalBars));
   const barWidth = totalBarWidth / totalBars;
 
-  const containerHeight = dataContainer.clientHeight - 50;
+  const containerHeight = dataContainer.clientHeight - 30;
 
   svg.setAttribute('height', containerHeight + 'px');
 
   const maxAmount = Math.max(...gradeData.map(item => item.grade));
 
   gradeData.forEach((item, index) => {
-      const barHeight = (item.grade / maxAmount) * containerHeight; // Scale based on max amount
+      const barHeight = (item.grade / maxAmount) * containerHeight; 
 
       const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       bar.setAttribute('x', index * (barWidth + spacing)); 
@@ -246,7 +236,13 @@ async function displayGrades() {
       bar.setAttribute('width', barWidth);
       bar.setAttribute('height', barHeight);
       bar.style.fill = 'darkviolet';
-      bar.addEventListener('mouseover', handleMouseOver); 
+      bar.addEventListener('mouseover', handleMouseOver);
+      bar.addEventListener('mouseover', () => {
+        gradesText.style.display = 'none'});
+      bar.addEventListener('mouseout', () => {
+        taskTextElements.forEach(text => text.style.display = 'none'); 
+        gradesText.style.display = 'block'; 
+      });
 
       const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       amountText.setAttribute('x', index * (barWidth + spacing) + barWidth / 2);
@@ -258,23 +254,32 @@ async function displayGrades() {
 
       const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       taskText.setAttribute('x', containerWidth / 2);
-      taskText.setAttribute('y', containerHeight / 6); 
+      taskText.setAttribute('y', containerHeight / 10); 
       taskText.setAttribute('text-anchor', 'middle'); 
       taskText.setAttribute('data-type', 'taskText')
       taskText.style.fill = 'gainsboro';
       taskText.textContent = `${item.name}`;
-      taskText.style.display = 'none';  
-      
-      taskTextElements.push(taskText); 
+      taskText.style.display = 'none'; 
 
+      taskTextElements.push(taskText); 
+      
       barsGroup.appendChild(bar);
       barsGroup.appendChild(amountText);
       barsGroup.appendChild(taskText);
   });
 
+  const gradesText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  gradesText.setAttribute('x', containerWidth / 2);
+  gradesText.setAttribute('y', containerHeight / 10); 
+  gradesText.setAttribute('text-anchor', 'middle'); 
+  gradesText.style.fill = 'gainsboro';
+  gradesText.textContent = "Grades";
+  gradesText.style.display = 'block';
+  
   svg.appendChild(barsGroup);
+  svg.appendChild(gradesText)
   dataContainer.appendChild(svg);
-
+  
 }
 
 
@@ -345,12 +350,15 @@ async function displayAudit() {
     combinedXpDownData.forEach((item, index) => {
       const barWidth = (item.amount / maxAmount) * 100; // Scale based on max amount
 
+      const containerWidth = dataContainer.clientWidth - 50; // Adjust for padding or margins
+      const barX = containerWidth - (barWidth * containerWidth / 100); // Calculate x position from right
+
       const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      bar.setAttribute('x', 0);
+      bar.setAttribute('x', barX);
       bar.setAttribute('y', index * (barHeight + spacing));
       bar.setAttribute('width', barWidth + '%');
       bar.setAttribute('height', barHeight);
-      bar.style.fill = 'rebeccapurple';
+      bar.style.fill = 'DarkOrange';
 
       const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       amountText.setAttribute('x', 0); 
@@ -366,17 +374,11 @@ async function displayAudit() {
       taskText.style.fill = 'gainsboro'; 
       taskText.textContent = `${item.name}`;
 
-
-      // const totalUp = document.createElement('div')
-      // totalUp.innerHTML = `Total XP Lost ${totalXpDownAmount.toFixed(0)} Kb<br> Total XP Gained ${totalXpUpAmount.toFixed(0)} Kb`
-
-      // barsGroup.appendChild(totalUp)
       barsGroup.appendChild(bar);
       barsGroup.appendChild(amountText);
       barsGroup.appendChild(taskText); 
       
     });
-
 
     combinedXpUpData.forEach((item, index) => {
       const barWidth = (item.amount / maxAmount) * 100; // Scale based on max amount
@@ -386,7 +388,7 @@ async function displayAudit() {
       bar.setAttribute('y', (index + combinedXpDownData.length) * (barHeight + spacing));
       bar.setAttribute('width', barWidth + '%');
       bar.setAttribute('height', barHeight);
-      bar.style.fill = 'indigo';
+      bar.style.fill = 'MediumSeaGreen';
 
       const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       amountText.setAttribute('x', 0); 
@@ -402,19 +404,13 @@ async function displayAudit() {
       taskText.style.fill = 'gainsboro'; 
       taskText.textContent = `${item.name}`;
 
-      // const totalUp = document.createElement('div')
-      // totalUp.innerHTML = `Total XP Lost ${totalXpDownAmount.toFixed(0)} Kb<br> Total XP Gained ${totalXpUpAmount.toFixed(0)} Kb`
-
-      // barsGroup.appendChild(totalUp)
       barsGroup.appendChild(bar);
       barsGroup.appendChild(amountText);
       barsGroup.appendChild(taskText); 
 
     });
 
-    
-    // dataContainer.appendChild(totalUp)
-    // dataContainer.appendChild(document.createElement('br'))
+    document.getElementById("auditRatio").innerHTML += `<br>Total XP Lost ${totalXpDownAmount.toFixed(0)} Kb & Total XP Gained ${totalXpUpAmount.toFixed(0)} Kb`;
 
     svg.appendChild(barsGroup);
     dataContainer.appendChild(svg);
