@@ -26,6 +26,31 @@ function combineDuplicates(data) {
   return combinedData;
 }
 
+function handleMouseOver(event) {
+  const hoveredBar = event.target;
+  const hoveredBarIndex = [...hoveredBar.parentElement.children]
+.filter(child => child.tagName !== 'text') // Filter out text elements (assuming taskText is text)
+.indexOf(hoveredBar);
+
+  // Access and update position of corresponding taskText
+  const hoveredTaskText = taskTextElements[hoveredBarIndex];
+  hoveredTaskText.style.display = 'block'
+
+  // Reset previous hovered taskText (if any)
+  if (previouslyHoveredTaskText) {
+    previouslyHoveredTaskText.style.display = 'none'
+  }
+
+  previouslyHoveredTaskText = hoveredTaskText;
+}
+
+const taskTextElements = [];
+
+let previouslyHoveredTaskText = null;
+
+const spacing = 5; // Adjust spacing between bars
+  
+
 async function makeQuery(query) {
  
   const response = await fetch(
@@ -138,21 +163,21 @@ async function displayXps() {
 
     const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     bar.setAttribute('x', 0);
-    bar.setAttribute('y', index * barHeight);
-    bar.setAttribute('width', barWidth + '%');
+    bar.setAttribute('y', index * (barHeight + spacing));
+    bar.setAttribute('width', barWidth + '%' );
     bar.setAttribute('height', barHeight);
     bar.style.fill = 'darkviolet';
 
     const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     amountText.setAttribute('x', 0); // Adjust text position as needed
-    amountText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
+    amountText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); // Center text vertically
     amountText.setAttribute('dominant-baseline', 'middle');
     amountText.style.fill = 'gainsboro'; 
     amountText.textContent = `${item.amount} Kb`;
 
     const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     taskText.setAttribute('x', 150); // Adjust text position relative to bar width
-    taskText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
+    taskText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); // Center text vertically
     taskText.setAttribute('dominant-baseline', 'middle');
     taskText.style.fill = 'gainsboro'; 
     taskText.textContent = `${item.name}`;
@@ -191,7 +216,6 @@ async function displayGrades() {
 
   gradeData.sort((a, b) => b.grade - a.grade) // Sort from highest to lowest grade
 
-  console.log(gradeData)
   const dataContainer = document.getElementById('grades');
   dataContainer.innerHTML = '';
 
@@ -201,7 +225,6 @@ async function displayGrades() {
 
   const barsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-  const spacing = 5; // Adjust spacing between bars
   const totalBars = gradeData.length;
 
   // Calculate total width available for bars
@@ -213,11 +236,6 @@ async function displayGrades() {
   svg.setAttribute('height', containerHeight + 'px');
 
   const maxAmount = Math.max(...gradeData.map(item => item.grade));
-
-  const taskTextElements = [];
-
-  // Variable to store previously hovered taskText element (initially null)
-  let previouslyHoveredTaskText = null;
 
   gradeData.forEach((item, index) => {
       const barHeight = (item.grade / maxAmount) * containerHeight; // Scale based on max amount
@@ -232,16 +250,16 @@ async function displayGrades() {
 
       const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       amountText.setAttribute('x', index * (barWidth + spacing) + barWidth / 2);
-      amountText.setAttribute('y', containerHeight - barHeight + spacing); // Adjust position for text
-      amountText.setAttribute('text-anchor', 'start'); // Center text horizontally
+      amountText.setAttribute('y', containerHeight - barHeight + spacing); 
+      amountText.setAttribute('text-anchor', 'start'); 
       amountText.setAttribute('transform', `rotate(90 ${index * (barWidth + spacing) + barWidth / 2}, ${containerHeight - barHeight})`);
       amountText.style.fill = 'gainsboro';
       amountText.textContent = `${item.grade}`;
 
       const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       taskText.setAttribute('x', containerWidth / 2);
-      taskText.setAttribute('y', containerHeight / 6); // Adjust position for text
-      taskText.setAttribute('text-anchor', 'middle'); // Center text horizontally
+      taskText.setAttribute('y', containerHeight / 6); 
+      taskText.setAttribute('text-anchor', 'middle'); 
       taskText.setAttribute('data-type', 'taskText')
       taskText.style.fill = 'gainsboro';
       taskText.textContent = `${item.name}`;
@@ -257,29 +275,9 @@ async function displayGrades() {
   svg.appendChild(barsGroup);
   dataContainer.appendChild(svg);
 
-  function handleMouseOver(event) {
-    const hoveredBar = event.target;
-    const hoveredBarIndex = [...hoveredBar.parentElement.children]
-  .filter(child => child.tagName !== 'text') // Filter out text elements (assuming taskText is text)
-  .indexOf(hoveredBar);
-
-    // Access and update position of corresponding taskText
-    const hoveredTaskText = taskTextElements[hoveredBarIndex];
-    hoveredTaskText.style.display = 'block'
-    // Reset previous hovered taskText (if any)
-    if (previouslyHoveredTaskText) {
-      previouslyHoveredTaskText.style.display = 'none'
-    }
-  
-    // Update previouslyHoveredTaskText for next hover
-    previouslyHoveredTaskText = hoveredTaskText;
-  }
-
-
 }
 
 
-  
 async function displayAudit() {
   
     const downQuery = `{
@@ -305,7 +303,6 @@ async function displayAudit() {
     });
 
     const combinedXpDownData = combineDuplicates(xpDownData)
-    console.log(combinedXpDownData)
 
     const upQuery = `{
       transaction(where: { type: {_eq:"up"}, object: { type: {_eq: "project"}} }) {
@@ -330,7 +327,6 @@ async function displayAudit() {
     });
 
     const combinedXpUpData = combineDuplicates(xpUpData)
-    console.log(combinedXpUpData)
 
     const dataContainer = document.getElementById('auditXp');
     dataContainer.innerHTML = '';
@@ -341,7 +337,7 @@ async function displayAudit() {
     const barsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
     const barHeight = 20; 
-    const totalHeight = Math.max(combinedXpDownData.length + combinedXpUpData.length) * barHeight ;
+    const totalHeight = Math.max(combinedXpDownData.length + combinedXpUpData.length) * (barHeight + spacing) ;
     svg.setAttribute('height', totalHeight);
 
     const maxAmount = Math.max(...combinedXpDownData.map(item => item.amount), ...combinedXpUpData.map(item => item.amount));
@@ -351,25 +347,30 @@ async function displayAudit() {
 
       const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       bar.setAttribute('x', 0);
-      bar.setAttribute('y', index * barHeight);
+      bar.setAttribute('y', index * (barHeight + spacing));
       bar.setAttribute('width', barWidth + '%');
       bar.setAttribute('height', barHeight);
       bar.style.fill = 'rebeccapurple';
 
       const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       amountText.setAttribute('x', 0); 
-      amountText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
+      amountText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); // Center text vertically
       amountText.setAttribute('dominant-baseline', 'middle');
       amountText.style.fill = 'gainsboro'; 
       amountText.textContent = `Lost: ${item.amount} Kb`;
 
       const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       taskText.setAttribute('x', 200); 
-      taskText.setAttribute('y', index * barHeight + barHeight / 2); // Center text vertically
+      taskText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); // Center text vertically
       taskText.setAttribute('dominant-baseline', 'middle');
       taskText.style.fill = 'gainsboro'; 
       taskText.textContent = `${item.name}`;
 
+
+      // const totalUp = document.createElement('div')
+      // totalUp.innerHTML = `Total XP Lost ${totalXpDownAmount.toFixed(0)} Kb<br> Total XP Gained ${totalXpUpAmount.toFixed(0)} Kb`
+
+      // barsGroup.appendChild(totalUp)
       barsGroup.appendChild(bar);
       barsGroup.appendChild(amountText);
       barsGroup.appendChild(taskText); 
@@ -382,36 +383,42 @@ async function displayAudit() {
 
       const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       bar.setAttribute('x', 0);
-      bar.setAttribute('y', (index + combinedXpDownData.length) * barHeight);
+      bar.setAttribute('y', (index + combinedXpDownData.length) * (barHeight + spacing));
       bar.setAttribute('width', barWidth + '%');
       bar.setAttribute('height', barHeight);
       bar.style.fill = 'indigo';
 
       const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       amountText.setAttribute('x', 0); 
-      amountText.setAttribute('y', (index + combinedXpDownData.length) * barHeight + barHeight / 2); // Center text vertically
+      amountText.setAttribute('y', (index + combinedXpDownData.length) * (barHeight + spacing) + barHeight / 2); // Center text vertically
       amountText.setAttribute('dominant-baseline', 'middle');
       amountText.style.fill = 'gainsboro'; 
       amountText.textContent = `Gained: ${item.amount} Kb`;
 
       const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       taskText.setAttribute('x', 200); 
-      taskText.setAttribute('y', (index + combinedXpDownData.length) * barHeight + barHeight / 2); // Center text vertically
+      taskText.setAttribute('y', (index + combinedXpDownData.length) * (barHeight + spacing) + barHeight / 2); // Center text vertically
       taskText.setAttribute('dominant-baseline', 'middle');
       taskText.style.fill = 'gainsboro'; 
       taskText.textContent = `${item.name}`;
 
+      // const totalUp = document.createElement('div')
+      // totalUp.innerHTML = `Total XP Lost ${totalXpDownAmount.toFixed(0)} Kb<br> Total XP Gained ${totalXpUpAmount.toFixed(0)} Kb`
+
+      // barsGroup.appendChild(totalUp)
       barsGroup.appendChild(bar);
       barsGroup.appendChild(amountText);
       barsGroup.appendChild(taskText); 
+
     });
 
-    const totalUp = document.createElement('div')
-    totalUp.innerHTML = `Total XP Lost ${totalXpDownAmount.toFixed(0)} Kb<br> Total XP Gained ${totalXpUpAmount.toFixed(0)} Kb`
-    dataContainer.appendChild(totalUp)
-    dataContainer.appendChild(document.createElement('br'))
+    
+    // dataContainer.appendChild(totalUp)
+    // dataContainer.appendChild(document.createElement('br'))
 
     svg.appendChild(barsGroup);
     dataContainer.appendChild(svg);
 
 }
+
+
