@@ -1,9 +1,0 @@
-"filename", "language", "HTML", "JavaScript", "CSS", "Markdown", "comment", "blank", "total"
-"/home/nitroarch/kood/graphql/README.md", "Markdown", 0, 0, 0, 8, 0, 8, 16
-"/home/nitroarch/kood/graphql/index.html", "HTML", 39, 0, 0, 0, 0, 2, 41
-"/home/nitroarch/kood/graphql/js/buttons.js", "JavaScript", 0, 27, 0, 0, 0, 3, 30
-"/home/nitroarch/kood/graphql/js/credentials.js", "JavaScript", 0, 30, 0, 0, 0, 5, 35
-"/home/nitroarch/kood/graphql/js/query.js", "JavaScript", 0, 324, 0, 0, 6, 99, 429
-"/home/nitroarch/kood/graphql/server.mjs", "JavaScript", 0, 39, 0, 0, 0, 6, 45
-"/home/nitroarch/kood/graphql/static/main.css", "CSS", 0, 0, 62, 0, 0, 15, 77
-"Total", "-", 39, 420, 62, 8, 6, 138, 673
