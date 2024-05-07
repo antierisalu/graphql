@@ -36,10 +36,8 @@ function handleMouseOver(event) {
   hoveredTaskText.style.display = 'block'
 }
 
-
 const taskTextElements = [];
 const spacing = 5;
-  
 
 async function makeQuery(query) {
  
@@ -141,7 +139,6 @@ async function displayXps() {
 
   const barsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-  // Calculate the total height based on the number of items
   const barHeight = 20;
   const totalHeight = xpData.length * (barHeight + spacing);
   svg.setAttribute('height', totalHeight);
@@ -149,7 +146,7 @@ async function displayXps() {
   const maxAmount = Math.max(...xpData.map(item => item.amount));
 
   xpData.forEach((item, index) => {
-    const barWidth = (item.amount / maxAmount) * 100; // Scale based on max amount
+    const barWidth = (item.amount / maxAmount) * 100; 
 
     const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     bar.setAttribute('x', 0);
@@ -159,14 +156,14 @@ async function displayXps() {
     bar.style.fill = 'darkviolet';
 
     const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    amountText.setAttribute('x', 0); // Adjust text position as needed
-    amountText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); // Center text vertically
+    amountText.setAttribute('x', 0); 
+    amountText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); 
     amountText.setAttribute('dominant-baseline', 'middle');
     amountText.style.fill = 'gainsboro'; 
     amountText.textContent = `${item.amount} Kb`;
 
     const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    taskText.setAttribute('x', 150); // Adjust text position relative to bar width
+    taskText.setAttribute('x', 150); 
     taskText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); // Center text vertically
     taskText.setAttribute('dominant-baseline', 'middle');
     taskText.style.fill = 'gainsboro'; 
@@ -181,7 +178,6 @@ async function displayXps() {
   dataContainer.appendChild(svg);
 
 }
-
 
 async function displayGrades() {
   let gradeQuery = `{
@@ -217,7 +213,6 @@ async function displayGrades() {
 
   const totalBars = gradeData.length;
 
-  // Calculate total width available for bars
   const totalBarWidth = containerWidth - (spacing * (totalBars));
   const barWidth = totalBarWidth / totalBars;
 
@@ -281,7 +276,6 @@ async function displayGrades() {
   dataContainer.appendChild(svg);
   
 }
-
 
 async function displayAudit() {
   
@@ -348,10 +342,10 @@ async function displayAudit() {
     const maxAmount = Math.max(...combinedXpDownData.map(item => item.amount), ...combinedXpUpData.map(item => item.amount));
 
     combinedXpDownData.forEach((item, index) => {
-      const barWidth = (item.amount / maxAmount) * 100; // Scale based on max amount
+      const barWidth = (item.amount / maxAmount) * 100; 
 
-      const containerWidth = dataContainer.clientWidth - 50; // Adjust for padding or margins
-      const barX = containerWidth - (barWidth * containerWidth / 100); // Calculate x position from right
+      const containerWidth = dataContainer.clientWidth - 50; 
+      const barX = containerWidth - (barWidth * containerWidth / 100); 
 
       const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       bar.setAttribute('x', barX);
@@ -362,14 +356,14 @@ async function displayAudit() {
 
       const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       amountText.setAttribute('x', 0); 
-      amountText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); // Center text vertically
+      amountText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); 
       amountText.setAttribute('dominant-baseline', 'middle');
       amountText.style.fill = 'gainsboro'; 
       amountText.textContent = `Lost: ${item.amount} Kb`;
 
       const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       taskText.setAttribute('x', 200); 
-      taskText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); // Center text vertically
+      taskText.setAttribute('y', index * (barHeight + spacing) + barHeight / 2); 
       taskText.setAttribute('dominant-baseline', 'middle');
       taskText.style.fill = 'gainsboro'; 
       taskText.textContent = `${item.name}`;
@@ -381,7 +375,7 @@ async function displayAudit() {
     });
 
     combinedXpUpData.forEach((item, index) => {
-      const barWidth = (item.amount / maxAmount) * 100; // Scale based on max amount
+      const barWidth = (item.amount / maxAmount) * 100; 
 
       const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       bar.setAttribute('x', 0);
@@ -392,14 +386,14 @@ async function displayAudit() {
 
       const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       amountText.setAttribute('x', 0); 
-      amountText.setAttribute('y', (index + combinedXpDownData.length) * (barHeight + spacing) + barHeight / 2); // Center text vertically
+      amountText.setAttribute('y', (index + combinedXpDownData.length) * (barHeight + spacing) + barHeight / 2); 
       amountText.setAttribute('dominant-baseline', 'middle');
       amountText.style.fill = 'gainsboro'; 
       amountText.textContent = `Gained: ${item.amount} Kb`;
 
       const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       taskText.setAttribute('x', 200); 
-      taskText.setAttribute('y', (index + combinedXpDownData.length) * (barHeight + spacing) + barHeight / 2); // Center text vertically
+      taskText.setAttribute('y', (index + combinedXpDownData.length) * (barHeight + spacing) + barHeight / 2); 
       taskText.setAttribute('dominant-baseline', 'middle');
       taskText.style.fill = 'gainsboro'; 
       taskText.textContent = `${item.name}`;
@@ -416,5 +410,3 @@ async function displayAudit() {
     dataContainer.appendChild(svg);
 
 }
-
-
