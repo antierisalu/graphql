@@ -191,12 +191,13 @@ async function displayGrades() {
 
   gradeData.sort((a, b) => b.grade - a.grade) // Sort from highest to lowest grade
 
+  console.log(gradeData)
   const dataContainer = document.getElementById('grades');
   dataContainer.innerHTML = '';
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   const containerWidth = dataContainer.clientWidth; // Get the width of the container
-  svg.setAttribute('width', (containerWidth - 50) + 'px');
+  svg.setAttribute('width', containerWidth + 'px');
 
   const barsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
@@ -204,7 +205,7 @@ async function displayGrades() {
   const totalBars = gradeData.length;
 
   // Calculate total width available for bars
-  const totalBarWidth = containerWidth - (spacing * (totalBars - 1));
+  const totalBarWidth = containerWidth - (spacing * (totalBars));
   const barWidth = totalBarWidth / totalBars;
 
   const containerHeight = dataContainer.clientHeight - 50;
@@ -213,9 +214,13 @@ async function displayGrades() {
 
   const maxAmount = Math.max(...gradeData.map(item => item.grade));
 
+  const taskTextElements = [];
+
+  // Variable to store previously hovered taskText element (initially null)
+  let previouslyHoveredTaskText = null;
+
   gradeData.forEach((item, index) => {
       const barHeight = (item.grade / maxAmount) * containerHeight; // Scale based on max amount
-      console.log(barHeight)
 
       const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       bar.setAttribute('x', index * (barWidth + spacing)); 
@@ -223,29 +228,57 @@ async function displayGrades() {
       bar.setAttribute('width', barWidth);
       bar.setAttribute('height', barHeight);
       bar.style.fill = 'darkviolet';
+      bar.addEventListener('mouseover', handleMouseOver); 
 
       const amountText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       amountText.setAttribute('x', index * (barWidth + spacing) + barWidth / 2);
-      amountText.setAttribute('y', containerHeight - barHeight); // Adjust position for text
-      amountText.setAttribute('text-anchor', 'middle'); // Center text horizontally
+      amountText.setAttribute('y', containerHeight - barHeight + spacing); // Adjust position for text
+      amountText.setAttribute('text-anchor', 'start'); // Center text horizontally
+      amountText.setAttribute('transform', `rotate(90 ${index * (barWidth + spacing) + barWidth / 2}, ${containerHeight - barHeight})`);
       amountText.style.fill = 'gainsboro';
-      amountText.style.rotate = '270'; // Rotate counter-clockwise
       amountText.textContent = `${item.grade}`;
 
-      // const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      // taskText.setAttribute('x', index * (barWidth + spacing) + barWidth / 2);
-      // taskText.setAttribute('y', 120); // Adjust position for text
-      // taskText.setAttribute('text-anchor', 'middle'); // Center text horizontally
-      // taskText.style.fill = 'gainsboro';
-      // taskText.textContent = `${item.name}`;
+      const taskText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      taskText.setAttribute('x', containerWidth / 2);
+      taskText.setAttribute('y', containerHeight / 6); // Adjust position for text
+      taskText.setAttribute('text-anchor', 'middle'); // Center text horizontally
+      taskText.setAttribute('data-type', 'taskText')
+      taskText.style.fill = 'gainsboro';
+      taskText.textContent = `${item.name}`;
+      taskText.style.display = 'none';  
+      
+      taskTextElements.push(taskText); 
 
       barsGroup.appendChild(bar);
       barsGroup.appendChild(amountText);
-      // barsGroup.appendChild(taskText);
+      barsGroup.appendChild(taskText);
   });
+
   svg.appendChild(barsGroup);
   dataContainer.appendChild(svg);
+
+  function handleMouseOver(event) {
+    const hoveredBar = event.target;
+    const hoveredBarIndex = [...hoveredBar.parentElement.children]
+  .filter(child => child.tagName !== 'text') // Filter out text elements (assuming taskText is text)
+  .indexOf(hoveredBar);
+
+    // Access and update position of corresponding taskText
+    const hoveredTaskText = taskTextElements[hoveredBarIndex];
+    hoveredTaskText.style.display = 'block'
+    // Reset previous hovered taskText (if any)
+    if (previouslyHoveredTaskText) {
+      previouslyHoveredTaskText.style.display = 'none'
+    }
+  
+    // Update previouslyHoveredTaskText for next hover
+    previouslyHoveredTaskText = hoveredTaskText;
+  }
+
+
 }
+
+
   
 async function displayAudit() {
   
