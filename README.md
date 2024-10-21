@@ -1,5 +1,7 @@
 # 01 graphql
 
+![Screenshot](graphql.png)
+
 Log in with your 01 intra credentials, username or email combined with password.
 
 Compare data with your own intra page
